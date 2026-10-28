@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Generated data: always recreated by the seed script
+data/*.db
+data/*.db-wal
+data/*.db-shm
+
+# Results from CI or throwaway runs (commit results/ from your own full runs)
+ci-results/
+results/**/run-*/*/locust_exceptions.csv
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/

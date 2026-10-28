@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  functional-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: pytest -q
+
+  smoke-load-test:
+    # A 30-second, 10-user Locust run against the optimized variant. The job fails
+    # if p95 exceeds P95_MS or the failure ratio exceeds MAX_FAIL_RATIO.
+    needs: functional-tests
+    runs-on: ubuntu-latest
+    env:
+      P95_MS: "500"
+      MAX_FAIL_RATIO: "0.01"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python scripts/run_suite.py --variant optimized --profile smoke --results ci-results --strict
+      - name: Upload smoke-test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-load-test
+          path: ci-results/
